@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section combo-section" style="min-height: 80vh;">
+    <div class="combo-header">
+        <span class="eyebrow">COMBOS</span>
+        <h2>Pair up and <em>save</em></h2>
+        <p>Matching sets at a better price — only while stocks last.</p>
+    </div>
+    <div class="product-grid">
+        {% for combo in combos %}
+        <div class="product-card combo-card">
+            <div class="product-image">
+                <span class="badge">Save KSh {{ combo.savings }}</span>
+                <img src="{{ combo.image.url }}" alt="{{ combo.title }}">
+            </div>
+                       <div class="product-info">
+                <h3>{{ combo.title }}</h3>
+                <div class="product-footer">
+                    <span class="price">KSh {{ combo.combo_price }}</span>
+                    <form method="POST" action="{% url 'add_combo_to_cart' combo.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-add">Add to bag</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: #C0C9C0;">No active combos right now.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

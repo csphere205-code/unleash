@@ -1,0 +1,352 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}UNLEASH | Modern Bags{% endblock %}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-cream: {{ site_settings.page_background|default:"#F8F2EB" }};
+            --text-ink: {{ site_settings.text_ink|default:"#1B150F" }};
+            --card-panel: {{ site_settings.card_panel|default:"#FDF9F4" }};
+            --brand-green: {{ site_settings.primary_green|default:"#425430" }};
+            --soft-sand: {{ site_settings.soft_sand|default:"#EBE3DA" }};
+            --text-muted: {{ site_settings.muted_text|default:"#665B53" }};
+            --warm-brown: {{ site_settings.warm_brown|default:"#865634" }};
+            --border-color: {{ site_settings.borders|default:"#D8CFC7" }};
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+    </style>
+    
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="top-banner">
+        {{ site_settings.top_banner_text|default:"COMBO DEALS ON NOW · NAIROBI · NAKURU · MERU · MOMBASA" }}
+    </div>
+
+    <nav class="navbar">
+        <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle Menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <!-- Logo -->
+        <div class="logo">
+            <a href="{% url 'home' %}" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="{% static 'images/logo.png' %}" alt="UNLEASH" style="height: 36px; width: auto; display: block;">
+            </a>
+        </div>
+        
+        <div class="nav-links" id="navLinks">
+            <a href="{% url 'shop' %}" style="font-weight: 500;">Shop All</a>
+            <span class="nav-divider">|</span>
+            {% for category in global_categories %}
+                <a href="{% url 'category_shop' category.slug %}">{{ category.name }}</a>
+            {% endfor %}
+            <span class="nav-divider">|</span>
+            <a href="{% url 'combo_list' %}" class="nav-highlight">Combos</a>
+            <a href="{% url 'offer_list' %}" class="nav-highlight">Offers</a>
+        </div>
+        
+        <div class="nav-icons">
+            <button type="button" class="icon-btn" onclick="toggleSearch(event)" aria-label="Search">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+            
+            <button type="button" class="icon-btn" onclick="toggleCart(event)" aria-label="Shopping Bag">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span class="cart-count" id="cartCountBadge" {% if not cart.items.count %}style="display:none;"{% endif %}>{{ cart.items.count }}</span>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <button class="close-search" onclick="toggleSearch(event)">&times;</button>
+        <form action="{% url 'search' %}" method="GET" class="search-form">
+            <input type="text" name="q" id="searchInput" placeholder="Search for bags, colours, categories..." autocomplete="off">
+            <button type="submit">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </form>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart(event)"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Your Bag</h3>
+            <button class="close-cart" onclick="toggleCart(event)">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItemsContainer">
+            {% for item in cart.items.all %}
+            <div class="cart-item" id="cart-item-{{ item.id }}">
+                {% if item.combo %}
+                    <img src="{{ item.combo.image.url }}" alt="{{ item.combo.title }}">
+                {% else %}
+                    {% with item.product.product_images.first as pimg %}
+                    {% if pimg %}<img src="{{ pimg.image.url }}" alt="{{ item.product.name }}">{% endif %}
+                    {% endwith %}
+                {% endif %}
+                
+                <div class="cart-item-details">
+                    {% if item.combo %}
+                        <h4>{{ item.combo.title }}</h4>
+                        <p style="font-size: 0.75rem; color: var(--warm-brown);">Combo Deal</p>
+                    {% else %}
+                        <h4>{{ item.product.name }}</h4>
+                        {% if item.color %}
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">{{ item.color.name }}</p>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <div class="cart-quantity-controls">
+                        <button type="button" class="qty-btn" onclick="updateQuantity({{ item.id }}, 'decrease')" aria-label="Decrease quantity">−</button>
+                        <span class="qty-display" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+                        <button type="button" class="qty-btn" onclick="updateQuantity({{ item.id }}, 'increase')" aria-label="Increase quantity">+</button>
+                    </div>
+                    
+                    <p style="margin-top: 6px;">KSh {{ item.item_price }}</p>
+                </div>
+                <a href="{% url 'remove_from_cart' item.id %}" class="remove-item">&times;</a>
+            </div>
+            {% empty %}
+            <p class="empty-cart">Your bag is empty.</p>
+            {% endfor %}
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal</span>
+                <span id="cartSubtotal">KSh {{ cart.total_price }}</span>
+            </div>
+            <a href="{% url 'checkout' %}" class="btn btn-primary" style="width: 100%; text-align: center; text-decoration: none;">Checkout</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h4>UNLEASH</h4>
+                <p>Nairobi · Nakuru · Meru · Mombasa</p>
+                <p class="footer-desc">Bags with a silk-soft finish in four quiet colours.</p>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Shop</h4>
+                <a href="{% url 'shop' %}">All Products</a>
+                {% for category in global_categories %}
+                    <a href="{% url 'category_shop' category.slug %}">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+            
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <p>hello@unleash.co.ke</p>
+                <p>+254 700 000 000</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleCart(event) {
+            if (event) event.preventDefault();
+            document.getElementById('cartSidebar').classList.toggle('active');
+            document.getElementById('cartOverlay').classList.toggle('active');
+        }
+        
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+            document.querySelector('.hamburger').classList.toggle('active');
+        }
+
+        function toggleSearch(event) {
+            if (event) event.preventDefault();
+            const overlay = document.getElementById('searchOverlay');
+            overlay.classList.toggle('active');
+            
+            if (overlay.classList.contains('active')) {
+                setTimeout(() => document.getElementById('searchInput').focus(), 100);
+            }
+        }
+
+        // --- AJAX CART UPDATE ---
+        function updateQuantity(itemId, action) {
+            if (window.cartUpdateInProgress) return;
+            window.cartUpdateInProgress = true;
+
+            const url = `/update-cart/${itemId}/${action}/`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.cartUpdateInProgress = false;
+
+                if (!data.success) {
+                    console.error('Update failed');
+                    return;
+                }
+
+                const qtyDisplay = document.getElementById(`qty-${itemId}`);
+                if (qtyDisplay) {
+                    if (action === 'increase') {
+                        qtyDisplay.innerText = parseInt(qtyDisplay.innerText) + 1;
+                    } else if (action === 'decrease') {
+                        const currentQty = parseInt(qtyDisplay.innerText);
+                        if (currentQty > 1) {
+                            qtyDisplay.innerText = currentQty - 1;
+                        } else {
+                            const row = document.getElementById(`cart-item-${itemId}`);
+                            if (row) row.remove();
+                            
+                            const container = document.getElementById('cartItemsContainer');
+                            if (container && container.querySelectorAll('.cart-item').length === 0) {
+                                container.innerHTML = '<p class="empty-cart">Your bag is empty.</p>';
+                            }
+                        }
+                    }
+                }
+
+                const badge = document.getElementById('cartCountBadge');
+                if (badge) {
+                    badge.innerText = data.total_items;
+                    if (data.total_items > 0) {
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                const subtotal = document.getElementById('cartSubtotal');
+                if (subtotal) {
+                    subtotal.innerText = `KSh ${data.total_price.toLocaleString()}`;
+                }
+            })
+            .catch(error => {
+                window.cartUpdateInProgress = false;
+                console.error('Error:', error);
+            });
+        }
+
+        // --- CAROUSEL LOGIC ---
+        let carouselTimer;
+        const autoplayDelay = 5000;
+
+        function scrollCarousel(direction, event) {
+            if (event) event.preventDefault();
+            const carousel = document.getElementById('heroCarousel');
+            if (!carousel) return;
+            
+            const slideWidth = carousel.clientWidth;
+            const maxScroll = carousel.scrollWidth - slideWidth;
+            const currentScroll = carousel.scrollLeft;
+
+            if (direction === 1 && Math.ceil(currentScroll) >= Math.ceil(maxScroll)) {
+                carousel.scrollTo({ left: 0, behavior: 'smooth' });
+            } 
+            else if (direction === -1 && currentScroll <= 0) {
+                carousel.scrollTo({ left: maxScroll, behavior: 'smooth' });
+            } 
+            else {
+                carousel.scrollBy({ left: slideWidth * direction, behavior: 'smooth' });
+            }
+
+            resetCarouselTimer();
+        }
+
+        function startCarouselTimer() {
+            const carousel = document.getElementById('heroCarousel');
+            if (!carousel) return;
+            if (carousel.children.length > 1) {
+                carouselTimer = setInterval(() => {
+                    scrollCarousel(1);
+                }, autoplayDelay);
+            }
+        }
+
+        function resetCarouselTimer() {
+            clearInterval(carouselTimer);
+            startCarouselTimer();
+        }
+
+        // --- COUNTDOWN TIMER LOGIC ---
+        function initializeCountdowns() {
+            const countdowns = document.querySelectorAll('.countdown-container');
+
+            countdowns.forEach(container => {
+                const endDateStr = container.getAttribute('data-end-date');
+                if (!endDateStr) return;
+                
+                const endDate = new Date(endDateStr).getTime();
+                const timerElement = container.querySelector('.countdown-timer');
+                
+                const daysEl = container.querySelector('.days');
+                const hoursEl = container.querySelector('.hours');
+                const minsEl = container.querySelector('.minutes');
+                const secsEl = container.querySelector('.seconds');
+
+                if (!timerElement) return;
+
+                const updateTimer = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = endDate - now;
+
+                    if (distance < 0) {
+                        clearInterval(updateTimer);
+                        container.innerHTML = "<span style='color: var(--warm-brown); font-weight: bold; letter-spacing: 1px;'>OFFER ENDED</span>";
+                        return;
+                    }
+
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    if (daysEl) daysEl.innerText = days.toString().padStart(2, '0');
+                    if (hoursEl) hoursEl.innerText = hours.toString().padStart(2, '0');
+                    if (minsEl) minsEl.innerText = minutes.toString().padStart(2, '0');
+                    if (secsEl) secsEl.innerText = seconds.toString().padStart(2, '0');
+                }, 1000);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            startCarouselTimer();
+            initializeCountdowns();
+            
+            const carouselWrapper = document.querySelector('.hero-carousel-wrapper');
+            if (carouselWrapper) {
+                carouselWrapper.addEventListener('mouseenter', () => clearInterval(carouselTimer));
+                carouselWrapper.addEventListener('mouseleave', () => startCarouselTimer());
+            }
+        });
+    </script>
+</body>
+</html>

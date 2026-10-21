@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header" style="margin-bottom: 40px;">
+        <h1 class="section-title">{{ category.name }}</h1>
+        <a href="{% url 'home' %}" class="view-all">← Back to home</a>
+    </div>
+    
+    <div class="product-grid">
+        {% for product in products %}
+        <a href="{% url 'product_detail' product.id %}" class="product-card">
+            <div class="product-image">
+                {% with product.product_images.first as pimg %}
+                {% if pimg %}
+                <img src="{{ pimg.image.url }}" alt="{{ product.name }}">
+                {% endif %}
+                {% endwith %}
+            </div>
+            <div class="product-info">
+                <div class="product-header">
+                    <h3>{{ product.name }}</h3>
+                </div>
+                <div class="product-footer">
+                    <span class="price">KSh {{ product.price }}</span>
+                    <span class="btn-add">View</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <p style="color: var(--text-muted);">No products in this category yet.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

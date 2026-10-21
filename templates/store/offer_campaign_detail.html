@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section" style="min-height: 80vh;">
+    
+    <!-- SPLIT HEADER WITH TIMER -->
+    <div class="campaign-header-split" style="margin-bottom: 50px;">
+        
+        <!-- Left: Title -->
+        <div class="campaign-title-block">
+            <span class="eyebrow" style="color: var(--warm-brown);">OFFER CAMPAIGN</span>
+            <h1 class="section-title" style="margin-bottom: 5px;">{{ campaign.title }}</h1>
+            <p style="color: var(--text-muted); margin-bottom: 0;">{{ campaign.description }}</p>
+        </div>
+
+        <!-- Center: Timer -->
+        <div class="campaign-timer-block">
+            {% if campaign.end_date %}
+            <div class="countdown-container" data-end-date="{{ campaign.end_date|date:'c' }}">
+                <span class="countdown-label">Ends in:</span>
+                <div class="countdown-timer">
+                    <div class="time-block"><span class="days">00</span><span class="label">Days</span></div>
+                    <div class="time-block"><span class="hours">00</span><span class="label">Hrs</span></div>
+                    <div class="time-block"><span class="minutes">00</span><span class="label">Min</span></div>
+                    <div class="time-block"><span class="seconds">00</span><span class="label">Sec</span></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Back Link -->
+        <div class="campaign-link-block">
+            <a href="{% url 'offer_list' %}" class="view-all">← All Campaigns</a>
+        </div>
+
+    </div>
+    
+    <!-- PRODUCT GRID -->
+    <div class="product-grid">
+        {% for offer in offers %}
+        <a href="{% url 'product_detail' offer.product.id %}" class="product-card">
+            <div class="product-image">
+                <span class="badge">Save KSh {{ offer.savings }}</span>
+                {% with offer.product.product_images.first as pimg %}
+                {% if pimg %}<img src="{{ pimg.image.url }}" alt="{{ offer.product.name }}">{% endif %}
+                {% endwith %}
+            </div>
+            <div class="product-info">
+                <div class="product-header">
+                    <h3>{{ offer.product.name }}</h3>
+                </div>
+                <div class="product-footer">
+                    <div class="price-group">
+                        <span class="price">KSh {{ offer.discount_price }}</span>
+                        <span class="price-old">KSh {{ offer.product.price }}</span>
+                    </div>
+                    <span class="btn-add">View</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1; padding: 40px;">No products added to this campaign yet.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

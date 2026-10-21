@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section" style="min-height: 80vh;">
+    <div class="section-header" style="margin-bottom: 40px; text-align: center; display: block;">
+        <span class="eyebrow" style="text-align: center;">EXCLUSIVE OFFERS</span>
+        <h1 class="section-title">Available Offers</h1>
+        <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">Discover our curated selection of bags at special prices — only while stocks last.</p>
+    </div>
+    
+    <div class="product-grid">
+        {% for offer in offers %}
+        <a href="{% url 'product_detail' offer.product.id %}" class="product-card">
+            <div class="product-image">
+                <span class="badge">Save KSh {{ offer.savings }}</span>
+                {% with offer.product.product_images.first as pimg %}
+                {% if pimg %}
+                <img src="{{ pimg.image.url }}" alt="{{ offer.product.name }}">
+                {% endif %}
+                {% endwith %}
+            </div>
+            <div class="product-info">
+                <div class="product-header">
+                    <h3>{{ offer.product.name }}</h3>
+                    <span class="product-color">{{ offer.product.category.name|upper }}</span>
+                </div>
+                <div class="product-footer">
+                    <div class="price-group">
+                        <span class="price">KSh {{ offer.discount_price }}</span>
+                        <span class="price-old">KSh {{ offer.product.price }}</span>
+                    </div>
+                    <span class="btn-add">View</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0;">
+            <p style="color: var(--text-muted); font-family: var(--font-serif); font-size: 1.5rem;">No active offers right now.</p>
+            <p style="color: var(--text-muted); margin-top: 10px;">Check back soon for our latest deals.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

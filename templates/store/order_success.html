@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 60px 20px;">
+    <div style="max-width: 650px; width: 100%;">
+        <span class="eyebrow" style="color: var(--warm-brown);">ORDER RECEIVED</span>
+        <h1 class="section-title" style="margin-bottom: 20px;">Thank you, {{ order.full_name }}!</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.7; margin-bottom: 30px;">
+            Your order <strong>#{{ order.id }}</strong> has been placed successfully. 
+            We'll contact you on <strong>{{ order.phone }}</strong> to arrange payment and delivery.
+        </p>
+        
+        <div style="background: var(--card-panel); padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); text-align: left; margin-bottom: 30px;">
+            <h3 style="font-family: var(--font-serif); font-size: 1.3rem; margin-bottom: 20px;">Order Details</h3>
+            
+            <!-- Subtotal -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; padding: 6px 0; color: var(--text-muted);">
+                <span>Subtotal</span>
+                <span>KSh {{ order.subtotal }}</span>
+            </div>
+            
+            <!-- Delivery Fee -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; padding: 6px 0; color: var(--text-muted);">
+                <span>Delivery ({{ order.city }})</span>
+                <span>KSh {{ order.delivery_fee }}</span>
+            </div>
+            
+            <!-- Total -->
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 600; padding: 15px 0 0 0; border-top: 1px solid var(--border-color); margin-top: 15px;">
+                <span>Total</span>
+                <span>KSh {{ order.total_amount }}</span>
+            </div>
+            
+            <!-- Delivery & Status -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-muted);">
+                <p style="margin-bottom: 6px;"><strong style="color: var(--text-ink);">Delivery Address:</strong> {{ order.delivery_address }}, {{ order.city }}</p>
+                <p><strong style="color: var(--text-ink);">Status:</strong> {{ order.get_status_display }}</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'home' %}" class="btn btn-primary">Continue Shopping</a>
+            <a href="{% url 'shop' %}" class="btn btn-secondary">Browse All Products</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

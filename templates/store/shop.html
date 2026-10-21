@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section" style="min-height: 80vh;">
+    
+    <!-- PAGE HEADER -->
+    <div style="margin-bottom: 50px;">
+        {% if category %}
+            <span class="eyebrow" style="color: var(--warm-brown);">SHOP BY CATEGORY</span>
+            <h1 class="section-title">{{ category.name }}</h1>
+            {% if category.description %}
+            <p style="color: var(--text-muted); max-width: 600px;">{{ category.description }}</p>
+            {% endif %}
+        {% else %}
+            <span class="eyebrow" style="color: var(--warm-brown);">ALL PRODUCTS</span>
+            <h1 class="section-title">Shop Collection</h1>
+            <p style="color: var(--text-muted); max-width: 600px;">Explore every bag in our silk-soft collection.</p>
+        {% endif %}
+    </div>
+    
+    <!-- PRODUCT GRID -->
+    <div class="product-grid">
+        {% for product in products %}
+        <a href="{% url 'product_detail' product.id %}" class="product-card">
+            <div class="product-image">
+                {% with product.product_images.first as pimg %}
+                {% if pimg %}<img src="{{ pimg.image.url }}" alt="{{ product.name }}">{% endif %}
+                {% endwith %}
+            </div>
+            <div class="product-info">
+                <div class="product-header">
+                    <h3>{{ product.name }}</h3>
+                    <span class="product-color">{{ product.category.name|upper }}</span>
+                </div>
+                <div class="product-footer">
+                    <span class="price">KSh {{ product.price }}</span>
+                    <span class="btn-add">View</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div style="text-align: center; grid-column: 1 / -1; padding: 60px 20px;">
+            <p style="color: var(--text-muted); font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 15px;">No products found in this collection.</p>
+            <a href="{% url 'home' %}" class="btn btn-secondary">Return to Home</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

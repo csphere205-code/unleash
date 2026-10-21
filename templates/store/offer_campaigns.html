@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section" style="min-height: 80vh;">
+    
+    <div style="text-align: center; margin-bottom: 60px;">
+        <span class="eyebrow" style="color: var(--warm-brown);">LIMITED TIME DEALS</span>
+        <h1 class="section-title" style="margin-bottom: 10px;">All Offer Campaigns</h1>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto;">Select a campaign below to explore exclusive savings on our collection.</p>
+    </div>
+    
+    <div class="product-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
+        {% for campaign in campaigns %}
+        <a href="{% url 'offer_campaign_detail' campaign.slug %}" class="product-card campaign-card">
+            
+            <!-- Image / Fallback -->
+            <div class="campaign-card-media">
+                {% if campaign.banner_image %}
+                    <img src="{{ campaign.banner_image.url }}" alt="{{ campaign.title }}">
+                {% else %}
+                    <div class="campaign-fallback">{{ campaign.title }}</div>
+                {% endif %}
+                
+                <!-- Live Timer Badge -->
+                {% if campaign.end_date %}
+                <span class="badge" style="background: var(--warm-brown);">
+                    Ends {{ campaign.end_date|date:"M d" }}
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- Details -->
+            <div class="product-info">
+                <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 5px;">{{ campaign.title }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5;">{{ campaign.description|truncatechars:80 }}</p>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <span style="color: var(--warm-brown); font-weight: 500; font-size: 0.85rem;">View Offers →</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">{{ campaign.offers.count }} Products</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1; padding: 40px;">No active campaigns right now.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

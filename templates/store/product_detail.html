@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="product-detail section">
+    <div class="detail-grid">
+        
+        <!-- Left: Image Gallery -->
+        <div class="detail-gallery">
+            <div class="main-image-wrapper">
+                {% if available_images %}
+                    <img id="mainImage" src="{{ available_images.0.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/600x700/F8F2EB/1B150F?text=No+Image+Available" alt="No image">
+                {% endif %}
+            </div>
+
+            <!-- Thumbnail Gallery for Color Variations -->
+            {% if available_images|length > 1 %}
+            <div class="thumbnail-gallery">
+                {% for pimg in available_images %}
+                <button 
+                    type="button"
+                    class="thumbnail-btn {% if forloop.first %}active{% endif %}"
+                    onclick="switchImageByThumbnail(this)"
+                    data-image="{{ pimg.image.url }}"
+                    data-color-name="{{ pimg.color.name }}"
+                    data-color-id="{{ pimg.color.id }}">
+                    <img src="{{ pimg.image.url }}" alt="{{ pimg.color.name }}">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Product Info -->
+        <div class="detail-info">
+            {% if product.category %}
+                <span class="eyebrow">{{ product.category.name }}</span>
+            {% else %}
+                <span class="eyebrow">NEW ARRIVAL</span>
+            {% endif %}
+            
+            <h1 class="detail-title">{{ product.name }}</h1>
+            
+            <!-- Price Block -->
+            <div class="detail-price">
+                {% if offer %}
+                    <span class="price-current">KSh {{ offer.discount_price }}</span>
+                    <span class="price-old">KSh {{ product.price }}</span>
+                    <span class="badge" style="position: static; margin-left: 10px;">Save KSh {{ offer.savings }}</span>
+                {% else %}
+                    <span class="price-current">KSh {{ product.price }}</span>
+                {% endif %}
+            </div>
+
+            <p class="detail-description">{{ product.description }}</p>
+
+            <!-- Color Switcher -->
+            {% if available_images %}
+            <div class="color-switcher">
+                <span class="switch-label">COLOUR:</span>
+                <div class="swatches">
+                    {% for pimg in available_images %}
+                    <button 
+                        type="button"
+                        class="swatch {% if forloop.first %}active{% endif %}" 
+                        style="background-color: {{ pimg.color.hex_code }};" 
+                        data-image="{{ pimg.image.url }}"
+                        data-color-name="{{ pimg.color.name }}"
+                        data-color-id="{{ pimg.color.id }}"
+                        onclick="switchImage(this)"
+                        title="{{ pimg.color.name }}">
+                    </button>
+                    {% endfor %}
+                </div>
+                <span class="selected-color-name" id="selectedColorName">
+                    {{ available_images.0.color.name }}
+                </span>
+            </div>
+            {% endif %}
+
+            <!-- Add to Cart Form -->
+            <form method="POST" action="{% url 'add_to_cart' product.id %}" class="add-form">
+                {% csrf_token %}
+                <input type="hidden" name="color_id" id="selectedColorId" value="{% if available_images %}{{ available_images.0.color.id }}{% endif %}">
+                
+                <!-- Quantity Selector -->
+                <div class="quantity-selector">
+                    <span class="switch-label">QUANTITY:</span>
+                    <div class="quantity-controls">
+                        <button type="button" onclick="decrementQuantity()" class="qty-adjust-btn">−</button>
+                        <input type="number" name="quantity" id="quantityInput" value="1" min="1" readonly>
+                        <button type="button" onclick="incrementQuantity()" class="qty-adjust-btn">+</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 18px; font-size: 1rem;">
+                    Add to bag
+                </button>
+            </form>
+
+            <!-- Extra Info -->
+            <div class="detail-meta">
+                <p>Complimentary delivery in Nairobi, Nakuru, Meru & Mombasa</p>
+                <p>30-day returns on unused items</p>
+                <p>Crafted with a silk-soft finish</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Back to shop link -->
+<div style="text-align:center; padding: 20px 0 80px 0;">
+    <a href="{% url 'shop' %}" class="view-all">← Back to shop</a>
+</div>
+
+<!-- Color & Quantity Switching Script -->
+<script>
+    function switchImage(btn) {
+        const newSrc = btn.getAttribute('data-image');
+        const mainImage = document.getElementById('mainImage');
+        
+        mainImage.style.opacity = '0.5';
+        setTimeout(() => {
+            mainImage.src = newSrc;
+            mainImage.style.opacity = '1';
+        }, 150);
+
+        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.thumbnail-btn').forEach(t => {
+            t.classList.remove('active');
+            if (t.getAttribute('data-image') === newSrc) {
+                t.classList.add('active');
+            }
+        });
+
+        document.getElementById('selectedColorName').textContent = btn.getAttribute('data-color-name');
+        document.getElementById('selectedColorId').value = btn.getAttribute('data-color-id');
+    }
+
+    function switchImageByThumbnail(btn) {
+        const newSrc = btn.getAttribute('data-image');
+        const mainImage = document.getElementById('mainImage');
+        
+        mainImage.style.opacity = '0.5';
+        setTimeout(() => {
+            mainImage.src = newSrc;
+            mainImage.style.opacity = '1';
+        }, 150);
+
+        document.querySelectorAll('.thumbnail-btn').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.swatch').forEach(s => {
+            s.classList.remove('active');
+            if (s.getAttribute('data-image') === newSrc) {
+                s.classList.add('active');
+            }
+        });
+
+        document.getElementById('selectedColorName').textContent = btn.getAttribute('data-color-name');
+        document.getElementById('selectedColorId').value = btn.getAttribute('data-color-id');
+    }
+
+    function incrementQuantity() {
+        const input = document.getElementById('quantityInput');
+        input.value = parseInt(input.value) + 1;
+    }
+
+    function decrementQuantity() {
+        const input = document.getElementById('quantityInput');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Split Hero Layout -->
+<section class="hero-split-layout">
+    
+    <!-- Sidebar -->
+    <aside class="hero-sidebar">
+        <h3 class="sidebar-title">Combos & Offers</h3>
+        <div class="sidebar-list">
+            {% for combo in combos|slice:":3" %}
+            <a href="{% url 'combo_list' %}" class="sidebar-item">
+                <div class="sidebar-img-wrapper">
+                    <img src="{{ combo.image.url }}" alt="{{ combo.title }}">
+                </div>
+                <div class="sidebar-text">
+                    <h4>{{ combo.title|truncatechars:20 }}</h4>
+                    <span class="sidebar-price">KSh {{ combo.combo_price }}</span>
+                </div>
+            </a>
+            {% endfor %}
+            
+            {% for campaign in active_campaigns %}
+                {% for offer in campaign.offers.all|slice:":1" %}
+                <a href="{% url 'offer_campaign_detail' campaign.slug %}" class="sidebar-item">
+                    <div class="sidebar-img-wrapper">
+                        {% with offer.product.product_images.first as pimg %}
+                        {% if pimg %}<img src="{{ pimg.image.url }}" alt="{{ offer.product.name }}">{% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="sidebar-text">
+                        <h4>{{ campaign.title|truncatechars:20 }}</h4>
+                        <span class="sidebar-price">From KSh {{ offer.discount_price }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <a href="{% url 'combo_list' %}" class="sidebar-view-all">View all deals →</a>
+    </aside>
+
+    <!-- Main Hero Carousel -->
+    <div class="hero-carousel-wrapper">
+        <div class="hero-carousel" id="heroCarousel">
+            {% for slide in hero_slides %}
+            <a href="{{ slide.button_link }}" class="hero-slide-link">
+                <div class="hero-slide">
+                    <img src="{{ slide.image.url }}" alt="Campaign Banner">
+                </div>
+            </a>
+            {% empty %}
+            <div class="hero-slide">
+                <img src="{% static 'images/hero-bag-brown.jpg' %}" alt="Silk Tote Bag">
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if hero_slides|length > 1 %}
+        <button class="carousel-nav prev" onclick="scrollCarousel(-1, event)">&#10094;</button>
+        <button class="carousel-nav next" onclick="scrollCarousel(1, event)">&#10095;</button>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Shop by Colour (Static Brand Palette) -->
+<section class="section">
+    <div class="color-grid">
+        {% for color in colors %}
+        <div class="color-card" style="background-color: {{ color.hex_code }};">
+            <span class="color-label">{{ color.name }}</span>
+        </div>
+        {% empty %}
+        <div class="color-card" style="background-color: #865634;"><span class="color-label">Brown</span></div>
+        <div class="color-card" style="background-color: #7B8794;"><span class="color-label">Grey</span></div>
+        <div class="color-card" style="background-color: #425430;"><span class="color-label">Green</span></div>
+        <div class="color-card" style="background-color: #1B150F;"><span class="color-label">Black</span></div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Bestsellers -->
+<section class="section" id="bestsellers">
+    <div class="section-header">
+        <h2 class="section-title">Bestsellers</h2>
+        <a href="{% url 'shop' %}" class="view-all">View all →</a>
+    </div>
+    <div class="product-grid">
+        {% for product in bestsellers %}
+        <a href="{% url 'product_detail' product.id %}" class="product-card">
+            <div class="product-image">
+                {% with product.product_images.first as pimg %}
+                {% if pimg %}<img src="{{ pimg.image.url }}" alt="{{ product.name }}">{% endif %}
+                {% endwith %}
+            </div>
+            <div class="product-info">
+                <div class="product-header">
+                    <h3>{{ product.name }}</h3>
+                    <span class="product-color">{{ product.category.name|upper }}</span>
+                </div>
+                <div class="product-footer">
+                    <span class="price">KSh {{ product.price }}</span>
+                    <span class="btn-add">View</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <p style="color: var(--text-muted);">No bestsellers added yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- DYNAMIC OFFER CAMPAIGNS -->
+{% for campaign in active_campaigns %}
+<section class="section campaign-section" id="campaign-{{ campaign.slug }}">
+    
+    <!-- SPLIT HEADER WITH TIMER -->
+    <div class="campaign-header-split">
+        
+        <!-- Left: Title -->
+        <div class="campaign-title-block">
+            <span class="eyebrow" style="color: var(--warm-brown);">LIMITED TIME OFFER</span>
+            <h2 class="section-title" style="margin-bottom: 5px;">{{ campaign.title }}</h2>
+            <p style="color: var(--text-muted); margin-bottom: 0;">{{ campaign.description }}</p>
+        </div>
+
+        <!-- Center: Timer -->
+        <div class="campaign-timer-block">
+            {% if campaign.end_date %}
+            <div class="countdown-container" data-end-date="{{ campaign.end_date|date:'c' }}">
+                <span class="countdown-label">Ends in:</span>
+                <div class="countdown-timer">
+                    <div class="time-block"><span class="days">00</span><span class="label">Days</span></div>
+                    <div class="time-block"><span class="hours">00</span><span class="label">Hrs</span></div>
+                    <div class="time-block"><span class="minutes">00</span><span class="label">Min</span></div>
+                    <div class="time-block"><span class="seconds">00</span><span class="label">Sec</span></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: View All Link -->
+        <div class="campaign-link-block">
+            <a href="{% url 'offer_campaign_detail' campaign.slug %}" class="view-all">View all →</a>
+        </div>
+
+    </div>
+    
+    <!-- PRODUCT GRID -->
+    <div class="product-grid">
+        {% for offer in campaign.offers.all|slice:":4" %}
+        <a href="{% url 'product_detail' offer.product.id %}" class="product-card">
+            <div class="product-image">
+                <span class="badge">Save KSh {{ offer.savings }}</span>
+                {% with offer.product.product_images.first as pimg %}
+                {% if pimg %}<img src="{{ pimg.image.url }}" alt="{{ offer.product.name }}">{% endif %}
+                {% endwith %}
+            </div>
+            <div class="product-info">
+                <div class="product-header">
+                    <h3>{{ offer.product.name }}</h3>
+                </div>
+                <div class="product-footer">
+                    <div class="price-group">
+                        <span class="price">KSh {{ offer.discount_price }}</span>
+                        <span class="price-old">KSh {{ offer.product.price }}</span>
+                    </div>
+                    <span class="btn-add">View</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- CENTERED VIEW ALL LINK (Mobile fallback) -->
+    <div class="campaign-mobile-link">
+        <a href="{% url 'offer_campaign_detail' campaign.slug %}" class="btn btn-secondary">View All {{ campaign.title }}</a>
+    </div>
+</section>
+{% endfor %}
+
+<!-- Combos -->
+<section class="section combo-section" id="combos">
+    <div class="combo-header">
+        <span class="eyebrow">COMBOS</span>
+        <h2>Pair up and <em>save</em></h2>
+        <p>Matching sets at a better price — only while stocks last.</p>
+    </div>
+    <div class="product-grid">
+        {% for combo in combos %}
+        <div class="product-card combo-card">
+            <div class="product-image">
+                <span class="badge">Save KSh {{ combo.savings }}</span>
+                <img src="{{ combo.image.url }}" alt="{{ combo.title }}">
+            </div>
+            <div class="product-info">
+                <h3>{{ combo.title }}</h3>
+                <div class="product-footer">
+                    <span class="price">KSh {{ combo.combo_price }}</span>
+                    <form method="POST" action="{% url 'add_combo_to_cart' combo.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-add">Add to bag</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: #C0C9C0;">No active combos right now.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

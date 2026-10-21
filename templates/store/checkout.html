@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section" style="min-height: 80vh;">
+    <div style="margin-bottom: 40px;">
+        <span class="eyebrow" style="color: var(--warm-brown);">CHECKOUT</span>
+        <h1 class="section-title">Complete Your Order</h1>
+    </div>
+    
+    <div class="checkout-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 60px; max-width: 1200px;">
+        
+        <!-- Left: Customer Details Form -->
+        <div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 25px;">Delivery Information</h3>
+            <form method="POST" id="checkoutForm" style="display: flex; flex-direction: column; gap: 20px;">
+                {% csrf_token %}
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Full Name</label>
+                    <input type="text" name="full_name" required style="width: 100%; padding: 14px; background: var(--card-panel); border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Email Address</label>
+                    <input type="email" name="email" required style="width: 100%; padding: 14px; background: var(--card-panel); border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Phone Number (M-Pesa)</label>
+                    <input type="tel" name="phone" required placeholder="07XX XXX XXX" style="width: 100%; padding: 14px; background: var(--card-panel); border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">City</label>
+                    <select name="city" id="citySelect" required onchange="updateDeliveryFee()" style="width: 100%; padding: 14px; background: var(--card-panel); border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="">Select your city...</option>
+                        <option value="Nairobi">Nairobi — KSh 300</option>
+                        <option value="Nakuru">Nakuru — KSh 400</option>
+                        <option value="Mombasa">Mombasa — KSh 500</option>
+                        <option value="Meru">Meru — KSh 450</option>
+                        <option value="Other">Other — KSh 600</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Delivery Address</label>
+                    <textarea name="delivery_address" required rows="4" style="width: 100%; padding: 14px; background: var(--card-panel); border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--font-sans); font-size: 1rem;"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 18px; font-size: 1rem;">Place Order</button>
+            </form>
+        </div>
+        
+        <!-- Right: Order Summary -->
+        <div style="background: var(--card-panel); padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); height: fit-content;">
+            <h3 style="font-family: var(--font-serif); font-size: 1.3rem; margin-bottom: 20px;">Order Summary</h3>
+            
+            {% for item in cart_items %}
+            <div style="display: flex; gap: 12px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                {% if item.combo %}
+                    <img src="{{ item.combo.image.url }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                {% else %}
+                    {% with item.product.product_images.first as pimg %}
+                    {% if pimg %}<img src="{{ pimg.image.url }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">{% endif %}
+                    {% endwith %}
+                {% endif %}
+                
+                <div style="flex: 1;">
+                    {% if item.combo %}
+                        <p style="font-weight: 500; font-size: 0.9rem;">{{ item.combo.title }}</p>
+                        <p style="color: var(--warm-brown); font-size: 0.8rem;">Combo Deal</p>
+                    {% else %}
+                        <p style="font-weight: 500; font-size: 0.9rem;">{{ item.product.name }}</p>
+                    {% endif %}
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">{{ item.quantity }} x KSh {{ item.item_price }}</p>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Subtotal -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding-top: 10px; color: var(--text-muted);">
+                <span>Subtotal</span>
+                <span>KSh {{ cart.total_price }}</span>
+            </div>
+            
+            <!-- Delivery Fee -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding: 10px 0; color: var(--text-muted);">
+                <span>Delivery Fee</span>
+                <span id="deliveryFeeDisplay">Select city</span>
+            </div>
+            
+            <!-- Total -->
+            <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 1.2rem; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                <span>Total</span>
+                <span id="totalDisplay">KSh {{ cart.total_price }}</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    const DELIVERY_FEES = {
+        'Nairobi': 300,
+        'Nakuru': 400,
+        'Mombasa': 500,
+        'Meru': 450,
+        'Other': 600,
+    };
+    
+    // Ensure it's a number (handles DecimalField serialization)
+    const subtotal = parseFloat("{{ cart.total_price }}") || 0;
+
+    function updateDeliveryFee() {
+        const city = document.getElementById('citySelect').value;
+        const feeDisplay = document.getElementById('deliveryFeeDisplay');
+        const totalDisplay = document.getElementById('totalDisplay');
+        
+        if (city && DELIVERY_FEES[city] !== undefined) {
+            const fee = DELIVERY_FEES[city];
+            feeDisplay.innerText = `KSh ${fee.toLocaleString()}`;
+            feeDisplay.style.color = 'var(--text-ink)';
+            totalDisplay.innerText = `KSh ${(subtotal + fee).toLocaleString()}`;
+        } else {
+            feeDisplay.innerText = 'Select city';
+            feeDisplay.style.color = 'var(--text-muted)';
+            totalDisplay.innerText = `KSh ${subtotal.toLocaleString()}`;
+        }
+    }
+</script>
+
+<style>
+@media (max-width: 992px) {
+    .checkout-grid { grid-template-columns: 1fr !important; gap: 30px !important; }
+}
+</style>
+{% endblock %}
