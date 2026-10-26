@@ -15,7 +15,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-me')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Railway provides a domain; for now, allow all hosts to fix the 500 error.
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(','
 
 # CSRF Trusted Origins (Critical for HTTPS and Admin Panel on Railway)
 CSRF_TRUSTED_ORIGINS = [
