@@ -196,7 +196,7 @@
     box-shadow: 0 4px 10px rgba(27, 21, 15, 0.05);
 }
 
-/* --- PRODUCT GRID (4 per row) --- */
+/* --- PRODUCT GRID (4 per row Desktop) --- */
 .section .product-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr); 
@@ -317,7 +317,7 @@
     position: relative;
     background: var(--brand-green);
     overflow: hidden;
-    height: 280px; /* Fixed height on desktop */
+    height: 280px;
 }
 
 .campaign-card-media img {
@@ -392,9 +392,80 @@
 
     .carousel-nav { display: none; } 
 
-    .section .product-grid { grid-template-columns: 1fr; }
+    /* ============================================
+       2 PRODUCTS PER ROW (Bestsellers & Offers)
+       ============================================ */
+    .section .product-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px;
+    }
+    
+    .section .product-card .product-info { padding: 12px; }
+    .section .product-card .product-header h3 { font-size: 0.9rem; line-height: 1.2; }
+    .section .product-card .product-color { font-size: 0.55rem; letter-spacing: 1px; }
+    .section .product-card .product-image { height: 200px; }
+    .section .product-card .price { font-size: 0.85rem; }
+    .section .product-card .btn-add { padding: 6px 12px; font-size: 0.7rem; }
+    .section .product-card .price-group .price-old { font-size: 0.65rem; }
+
+    .section { padding: 50px 15px; }
+    .section-title { font-size: 1.6rem; margin-bottom: 20px; }
+    .view-all { font-size: 0.8rem; }
+    
     .color-grid { grid-template-columns: repeat(2, 1fr); }
-    .combo-section { padding: 60px 20px; }
+    
+    /* ============================================
+       COMBO SECTION OVERRIDE (1 PER ROW, FULL IMAGE)
+       ============================================ */
+    .combo-section { 
+        padding: 60px 20px; 
+    }
+    
+    /* Force 1 column */
+    .combo-section .product-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    /* Remove forced heights and use contain to show the entire image */
+    .combo-section .product-card .product-image {
+        height: auto !important; 
+        overflow: visible !important;
+        background: transparent !important;
+    }
+
+    .combo-section .product-card .product-image img {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
+        display: block;
+    }
+
+    /* Restore nice spacing for the details below the image */
+    .combo-section .product-card .product-info { 
+        padding: 20px; 
+    }
+    
+    .combo-section .product-card .product-header h3 { 
+        font-size: 1.25rem; 
+    }
+
+    .combo-section .product-card .product-footer {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .combo-section .product-card .btn-add {
+        width: auto;
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+    
+    .combo-section .product-card .price {
+        font-size: 1rem;
+    }
 
     /* Mobile Campaign Header */
     .campaign-header-split {
@@ -435,4 +506,14 @@
     .campaign-card-media img {
         object-fit: contain;
     }
+}
+
+/* === SMALL PHONES (Below 480px) === */
+@media (max-width: 480px) {
+    .section .product-grid { gap: 10px; }
+    .section .product-card .product-info { padding: 10px; }
+    .section .product-card .product-header h3 { font-size: 0.8rem; }
+    .section .product-card .product-image { height: 160px; }
+    .section .product-card .price { font-size: 0.75rem; }
+    .section .product-card .btn-add { padding: 5px 10px; font-size: 0.65rem; }
 }

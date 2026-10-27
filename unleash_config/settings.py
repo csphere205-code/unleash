@@ -14,8 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-me')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Railway provides a domain; for now, allow all hosts to fix the 500 error.
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(','
+# Added the missing closing parenthesis here:
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # CSRF Trusted Origins (Critical for HTTPS and Admin Panel on Railway)
 CSRF_TRUSTED_ORIGINS = [
@@ -45,7 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Must be high up
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,7 +79,6 @@ WSGI_APPLICATION = 'unleash_config.wsgi.application'
 # DATABASE
 # ============================================
 
-# dj_database_url looks for DATABASE_URL env variable first, then falls back to SQLite
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
