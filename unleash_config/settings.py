@@ -14,7 +14,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-me')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Added the missing closing parenthesis here:
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # CSRF Trusted Origins (Critical for HTTPS and Admin Panel on Railway)
@@ -113,7 +112,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# FIX: On Railway, static files are served from /app/staticfiles
+STATIC_ROOT = '/app/staticfiles' if not DEBUG else BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -141,8 +141,5 @@ STORAGES = {
 # EMAIL
 # ============================================
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# FIX: The key is EMAIL_BACKEND, not MAILERS
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
